@@ -34,7 +34,7 @@ const user = {
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
         login(username, userInfo.password).then(response => {
-         // debugger
+          // debugger
           const data = response.data
           setToken(data.token)
           commit('SET_TOKEN', data.token)
@@ -71,7 +71,7 @@ const user = {
           })
 
           commit('SET_NAME', data.name)
-          commit('SET_AVATAR', "https://edu-zjm.oss-cn-beijing.aliyuncs.com/others/1.gif")
+          commit('SET_AVATAR', 'https://edu-zjm.oss-cn-beijing.aliyuncs.com/others/1.gif')
           commit('SET_BUTTONS', buttonAuthList)
           resolve(response)
         }).catch(error => {

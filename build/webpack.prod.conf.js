@@ -54,14 +54,15 @@ const webpackConfig = merge(baseWebpackConfig, {
       filename: config.build.index,
       template: 'index.html',
       inject: true,
-      favicon: resolve('yin.png'),
+      favicon: resolve('favicon.png'),
       title: 'vue-admin-template',
       minify: {
         removeComments: true,
         collapseWhitespace: true,
-        removeAttributeQuotes: true
-        // more options:
-        // https://github.com/kangax/html-minifier#options-quick-reference
+        removeAttributeQuotes: true,
+        // templateParameters: {
+        //   BASE_URL: config.build.assetsPublicPath + config.build.assetsSubDirectory
+        // }
       }
       // default sort mode uses toposort which cannot handle cyclic deps
       // in certain cases, and in webpack 4, chunk order in HTML doesn't
