@@ -1,23 +1,13 @@
 <template>
   <div class="app-container">
     <div style="font-size: 19PX; font-weight: 600; margin-bottom: 20px; margin-left: 20px;color: #a85a11;">
-      <div v-if="course.id">修改课程</div>
+      <div v-if="this.$route.params && this.$route.params.id">修改课程</div>
       <div v-else>添加课程</div>
     </div>
 
     <el-form label-width="120px">
       <el-form-item label="课程封面">
-        <el-upload
-          style="width:320px;"
-          :show-file-list="true"
-          :on-success="handleAvatarSuccess"
-          :on-error="handleAvatarError"
-          :before-upload="beforeAvatarUpload"
-          action=" http://localhost:8666/ataioss/fileoss">
-          <el-image v-if="course.cover" :src="course.cover"></el-image>
-          <i v-else class="el-icon-plus avatar-uploader-icon"/>
-          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过1MB</div>
-        </el-upload>
+        <el-image style="width:300px" :src="course.cover"></el-image>
       </el-form-item>
       <el-form-item label="课程名称">
         <el-input v-model="course.name"/>
@@ -63,29 +53,81 @@
       <el-form-item label="课程描述">
         <tinymce :height="200" v-model="course.description"/>
       </el-form-item>
-      <el-form-item  style="width:1300px" label="课时信息">
-        <el-table v-if="course.id" :data="courseClasses" element-loading-text="数据加载中" border fit highlight-current-row>
+      <el-form-item style="width:1300px" label="课时信息">
+        <el-table :data="courseClass" element-loading-text="数据加载中" border fit highlight-current-row>
+
+          <el-table-column label="上传数据" width="80" align="center" type="expand">
+<!--            <template slot-scope="scope">{{ scope.$index + 1 }}</template>-->
+            <template slot-scope="props">
+              <el-form label-position="left" inline class="table-expand">
+                <el-form-item label="选择视频">
+                  <el-upload
+                    ref="upload"
+                    :auto-upload="false"
+                    :on-success="fileUploadSuccess"
+                    :on-error="fileUploadError"
+                    :disabled="importBtnDisabled"
+                    :limit="1"
+                    :action="BASE_API+'/ataioss/fileoss'"
+                    name="file"
+                    accept=".doc, .docx,.txt, .xls, .xlsx, .ppt, .pptx, .pdf, .zip, .rar"
+                  >
+                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                    <el-button
+                      :loading="loading"
+                      style="margin-left: 10px;"
+                      size="small"
+                      type="success"
+                      @click="submitUpload"
+                    >{{ fileUploadBtnText }}
+                    </el-button>
+                  </el-upload>
+                </el-form-item>
+                <el-form-item label="选择pdf文件">
+                  <el-upload
+                    ref="upload1"
+                    :auto-upload="false"
+                    :on-success="fileUploadSuccess1"
+                    :on-error="fileUploadError"
+                    :disabled="importBtnDisabled1"
+                    :limit="1"
+                    :action="BASE_API+'/ataioss/fileoss'"
+                    name="file"
+                    accept=".xls, .xlsx, .txt"
+                  >
+                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                    <el-button
+                      :loading="loading1"
+                      style="margin-left: 10px;"
+                      size="small"
+                      type="success"
+                      @click="submitUpload1"
+                    >{{ fileUploadBtnText1 }}
+                    </el-button>
+                  </el-upload>
+                </el-form-item>
+              </el-form>
+            </template>
+          </el-table-column>
           <el-table-column label="课时次序" width="90" align="center" prop="order">
           </el-table-column>
           <el-table-column label="课时名" align="center" prop="name">
           </el-table-column>
-          <el-table-column label="课时视频" width="260" align="center" prop="video">
+          <el-table-column label="课时视频" width="200" align="center" prop="video">
           </el-table-column>
-          <el-table-column label="课时pdf" width="260" align="center" prop="pdf">
+          <el-table-column label="课时pdf" width="200" align="center" prop="pdf">
           </el-table-column>
-          <el-table-column width="270" align="center">
+
+          <el-table-column  width="270" align="center">
             <template slot="header" slot-scope="scope">
               <el-button size="mini" type="primary" @click="addCourseClass">添加课时</el-button>
             </template>
             <template slot-scope="scope">
-              <el-button type="primary" size="mini" icon="el-icon-edit" @click="setUpdateClassId(scope.row.id)">修改
-              </el-button>
-              <el-button type="danger" size="mini" icon="el-icon-delete" @click="removeCourseClass(scope.row.id)">删除
-              </el-button>
+              <el-button type="primary" size="mini" icon="el-icon-edit">修改</el-button>
+              <el-button type="danger" size="mini" icon="el-icon-delete">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
-        <el-tag v-else>请先添加课程</el-tag>
       </el-form-item>
       <el-form-item label="前置知识">
         <el-input v-model="course.bLearning" :rows="3" type="textarea"/>
@@ -103,67 +145,6 @@
         <el-button :disabled="saveBtnDisabled" type="primary" @click="saveOrUpdate">保存</el-button>
       </el-form-item>
     </el-form>
-
-    <el-dialog title="修改课程课时" :visible.sync="updateClassVisible">
-      <el-form :model="courseClass">
-        <el-form-item label="课时次序" label-width="100">
-          <el-input-number v-model="courseClass.order" :min="1"></el-input-number>
-        </el-form-item>
-        <el-form-item label="课时名称" label-width="100">
-          <el-input style="width: 360px" v-model="courseClass.name" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="选择视频">
-          <el-upload
-            ref="upload"
-            :auto-upload="false"
-            :on-success="fileUploadSuccess"
-            :on-error="fileUploadError"
-            :disabled="importBtnDisabled"
-            :limit="1"
-            :action="BASE_API+'/ataioss/fileoss'"
-            name="file"
-            accept=".doc, .docx,.txt, .xls, .xlsx, .ppt, .pptx, .pdf, .zip, .rar"
-          >
-            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-            <el-button
-              :loading="loading"
-              style="margin-left: 10px;"
-              size="small"
-              type="success"
-              @click="submitUpload"
-            >{{ fileUploadBtnText }}
-            </el-button>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="选择pdf文件">
-          <el-upload
-            ref="upload1"
-            :auto-upload="false"
-            :on-success="fileUploadSuccess1"
-            :on-error="fileUploadError"
-            :disabled="importBtnDisabled1"
-            :limit="1"
-            :action="BASE_API+'/ataioss/fileoss'"
-            name="file"
-            accept=".xls, .xlsx, .txt"
-          >
-            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-            <el-button
-              :loading="loading1"
-              style="margin-left: 10px;"
-              size="small"
-              type="success"
-              @click="submitUpload1"
-            >{{ fileUploadBtnText1 }}
-            </el-button>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="updateClassVisible = false">取 消</el-button>
-        <el-button type="primary" @click="updateCourseClass()">保存</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -181,7 +162,6 @@ export default {
   data() {
     return {
       course: {
-        id: '',
         cover: 'https://jiutian.10086.cn/edu/objects-download/76b106f68cb743d6893871627a30a37f%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C.png'
       }, // v-model双向绑定
       fileUploadBtnText: '上传到服务器', // 按钮文字
@@ -192,16 +172,8 @@ export default {
       importBtnDisabled1: false, // 按钮是否禁用,
       loading: false,
       loading1: false,
-      courseClasses: [],
-      courseClass: {
-        id:'',
-        courseId: '',
-        order: 0,
-        name: '',
-        video: '',
-        pdf: ''
-      },
-      updateClassVisible: false
+      classList: null,
+      courseClass: []
     }
   },
   watch: {
@@ -220,8 +192,6 @@ export default {
       // 判断路径有id值  修改操作
       if (this.$route.params && this.$route.params.id) {
         const id = this.$route.params.id
-        this.course.id = id
-        this.courseClass.courseId = id
         this.getInfo(id)
         this.getCourseClass(id)
       } else {
@@ -250,7 +220,7 @@ export default {
       courseApi
         .getCourseClass(courseId)
         .then(response => {
-          this.courseClasses = response.data.courseClassList
+          this.courseClass = response.data.courseClassList
         })
         .catch(response => {
           this.$message({
@@ -271,6 +241,7 @@ export default {
         this.updateCourse()
       }
     },
+    // 添加课程的方法
     addCourse() {
       courseApi
         .addCourseInfo(this.course)
@@ -288,14 +259,19 @@ export default {
           })
         })
     },
+    // 修改课程的方法
     updateCourse() {
       courseApi
         .updateCourse(this.course)
         .then(response => {
+          // 修改成功
+          // 提示成功
           this.$message({
             type: 'success',
             message: '修改成功！ 🧙‍♂️'
           })
+          // 回到讲师列表页面
+          // vue路由跳转
           this.$router.push({
             path: '/course/table'
           })
@@ -309,40 +285,10 @@ export default {
             type: 'success',
             message: '添加成功！ 😄'
           })
-          this.getCourseClass(this.courseClass.courseId)
-        })
-    },
-    setUpdateClassId(classId){
-      this.updateClassVisible = true
-      this.courseClass.id = classId
-    },
-    updateCourseClass() {
-      this.updateClassVisible = false
-      courseApi
-        .updateCourseClass(this.courseClass)
-        .then(response => {
-          this.$message({
-            type: 'success',
-            message: '修改成功！ 🧙‍♂️'
+          this.$router.push({
+            path: '/course/edit'
           })
-          this.getCourseClass(this.courseClass.courseId)
         })
-    },
-    removeCourseClass(id) {
-      // 删除比赛按钮的方法
-      this.$confirm('此操作将永久删除课时信息, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        courseApi.removeCourseClass(id).then(response => {
-          this.$message({
-            type: 'success',
-            message: '删除成功🤭'
-          })
-          this.getCourseClass(this.courseClass.courseId)
-        })
-      })
     },
     submitUpload() {
       // debugger
@@ -378,7 +324,8 @@ export default {
       if (response.success === true) {
         this.fileUploadBtnText = '导入成功'
         this.loading = false
-        this.courseClass.video = response.data.url
+        this.course.cover = response.data.url
+        console.log(this.course.cover)
         this.$message({
           type: 'success',
           message: response.message
@@ -399,7 +346,8 @@ export default {
       if (response.success === true) {
         this.fileUploadBtnText1 = '导入成功'
         this.loading1 = false
-        this.courseClass.pdf = response.data.url
+        this.course.result = response.data.url
+        console.log(this.course.result)
         this.$message({
           type: 'success',
           message: response.message
@@ -423,34 +371,7 @@ export default {
         type: 'error',
         message: '导入文件失败'
       })
-    },
-    // 头像上传成功
-    handleAvatarSuccess(response) {
-      if (response.success) {
-        this.course.cover = response.data.url
-        // 强制重新渲染
-        this.$forceUpdate()
-      } else {
-        this.$message.error('上传失败! （非20000）')
-      }
-    },
-    // 头像上传失败（http）
-    handleAvatarError() {
-      this.$message.error('上传失败! （http失败）')
-    },
-    // 上传校验
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isPNG = file.type === 'image/png'
-      const isLt1M = file.size / 1024 / 1024 < 1
-      if (!isJPG && !isPNG) {
-        this.$message.error('上传头像图片只能是 JPG/PNG 格式!')
-      }
-      if (!isLt1M) {
-        this.$message.error('上传头像图片大小不能超过 1MB!')
-      }
-      return (isJPG || isPNG) && isLt1M
-    },
+    }
   }
 }
 </script>
@@ -490,12 +411,10 @@ export default {
 .table-expand {
   font-size: 0;
 }
-
 .table-expand label {
   width: 90px;
   color: #99a9bf;
 }
-
 .table-expand .el-form-item {
   margin-right: 0;
   margin-bottom: 0;

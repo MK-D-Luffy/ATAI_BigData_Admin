@@ -1,22 +1,39 @@
 <template>
   <div class="app-container">
-    <div style="font-size: 19PX; font-weight: 600; margin-bottom: 20px; margin-left: 20px;">
-      <div v-if="this.$route.params && this.$route.params.id">修改比赛</div>
-      <div v-else>添加比赛</div>
+    <div style="font-size: 19PX; font-weight: 600; margin-bottom: 20px; margin-left: 20px;color: #a85a11;">
+      <div v-if="this.$route.params && this.$route.params.id">修改数据集</div>
+      <div v-else>添加数据集</div>
     </div>
 
     <el-form label-width="120px">
       <el-form-item label="数据集封面">
-        <el-image style="width: 300px" :src="dataset.image"></el-image>
+        <el-upload
+          style="width:320px;"
+          :show-file-list="true"
+          :on-success="handleAvatarSuccess"
+          :on-error="handleAvatarError"
+          :before-upload="beforeAvatarUpload"
+          action=" http://localhost:8666/ataioss/fileoss">
+          <el-image v-if="dataset.image" :src="dataset.image"></el-image>
+          <i v-else class="el-icon-plus avatar-uploader-icon"/>
+          <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过1MB</div>
+        </el-upload>
       </el-form-item>
       <el-form-item label="数据集名称">
         <el-input v-model="dataset.name"/>
       </el-form-item>
-      <el-form-item label="数据集技术">
-        <el-select v-model="dataset.level" clearable placeholder="请选择">
-          <el-option value="官方赛" label="官方赛"/>
-          <el-option value="训练赛" label="训练赛"/>
-        </el-select>
+      <el-form-item label="数据集分类">
+        <el-radio-group v-model="dataset.category">
+          <el-radio label="互联网">互联网</el-radio>
+          <el-radio label="金融">金融</el-radio>
+          <el-radio label="语言学">语言学</el-radio>
+          <el-radio label="卫生保健">卫生保健</el-radio>
+          <el-radio label="人口统计学">人口统计学</el-radio>
+          <el-radio label="商业">商业</el-radio>
+          <el-radio label="农业">农业</el-radio>
+          <el-radio label="政治">政治</el-radio>
+          <el-radio label="其他">其他</el-radio>
+        </el-radio-group>
       </el-form-item>
       <el-form-item label="数据集简介">
         <el-input v-model="dataset.intro" :rows="5" type="textarea"/>
@@ -70,6 +87,8 @@ export default {
       saveBtnDisabled: false, // 保存按钮是否禁用
       importBtnDisabled: false, // 按钮是否禁用,
       loading: false,
+      dialogImageUrl: '',
+      dialogVisible: false
     }
   },
   watch: {
@@ -93,7 +112,7 @@ export default {
         // 判断路径没有id值  添加操作
         // 清空表单即清空 dataset
         this.dataset = {
-          image:'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg'
+          image: ''
         } // v-model双向绑定
       }
     },
@@ -137,7 +156,7 @@ export default {
           // 回到比赛列表页面
           // vue路由跳转
           this.$router.push({
-            path: '/comp/table'
+            path: '/dataset/table'
           })
         })
     },
@@ -155,7 +174,7 @@ export default {
           // 回到讲师列表页面
           // vue路由跳转
           this.$router.push({
-            path: '/comp/table'
+            path: '/dataset/table'
           })
         })
     },
@@ -179,8 +198,7 @@ export default {
       if (response.success === true) {
         this.fileUploadBtnText = '导入成功'
         this.loading = false
-        this.dataset.cover = response.data.url
-        console.log(this.dataset.cover)
+        this.dataset.image = response.data.url
         this.$message({
           type: 'success',
           message: response.message
@@ -204,7 +222,34 @@ export default {
         type: 'error',
         message: '导入文件失败'
       })
-    }
+    },
+    // 头像上传成功
+    handleAvatarSuccess(response) {
+      if (response.success) {
+        this.dataset.image = response.data.url
+        // 强制重新渲染
+        this.$forceUpdate()
+      } else {
+        this.$message.error('上传失败! （非20000）')
+      }
+    },
+    // 头像上传失败（http）
+    handleAvatarError() {
+      this.$message.error('上传失败! （http失败）')
+    },
+    // 上传校验
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === 'image/jpeg'
+      const isPNG = file.type === 'image/png'
+      const isLt1M = file.size / 1024 / 1024 < 1
+      if (!isJPG && !isPNG) {
+        this.$message.error('上传头像图片只能是 JPG/PNG 格式!')
+      }
+      if (!isLt1M) {
+        this.$message.error('上传头像图片大小不能超过 1MB!')
+      }
+      return (isJPG || isPNG) && isLt1M
+    },
   }
 }
 </script>

@@ -11,21 +11,19 @@
       </el-table-column>
 
       <el-table-column :show-overflow-tooltip="true" prop="nickname" label="名称" align="center" width="100"/>
-      <el-table-column
-        label="性别"
-        align="center"
-        width="80"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row.sex === 1 ? '女' : '男' }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" prop="education" label="学历" align="center" width="140"/>
+
       <el-table-column :show-overflow-tooltip="true" prop="mobile" label="手机号" align="center" width="200"/>
       <el-table-column :show-overflow-tooltip="true" prop="email" label="邮箱" align="center" width="200"/>
-
-      <el-table-column :show-overflow-tooltip="true" prop="sign" label="签名" align="center"/>
-
+      <el-table-column label="简历" width="200" align="center">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="getUserResumeById(scope.row.id)"
+          >查看
+          </el-button>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
           <el-button
@@ -46,13 +44,97 @@
       :total="total"
       style="padding: 30px 0; text-align: center;"
       layout="total, prev, pager, next, jumper"
-      @current-change="getList"
+      @current-change="getUserList"
     />
+
+    <el-dialog
+      title="个人简历"
+      :visible.sync="resumeVisible"
+      append-to-body>
+      <el-descriptions class="margin-top" :column="3" border>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-user"></i>
+            用户名
+          </template>
+          {{ resume.name }}
+        </el-descriptions-item>
+
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-location-outline"></i>
+            年龄
+          </template>
+          {{ resume.age }}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-location-outline"></i>
+            性别
+          </template>
+          {{ resume.sex === 1 ? '男' : '女' }}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-mobile-phone"></i>
+            手机号
+          </template>
+          {{resume.mobile}}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-mobile-phone"></i>
+            邮箱
+          </template>
+          {{resume.email}}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-tickets"></i>
+            毕业院校
+          </template>
+          <el-tag size="small">{{resume.school}}</el-tag>
+          <el-tag size="small">{{resume.education}}</el-tag>
+        </el-descriptions-item>
+
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-office-building"></i>
+            联系地址
+          </template>
+          {{resume.address}}
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <el-descriptions class="margin-top" :column="1" border>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-office-building"></i>
+            项目经历
+          </template>
+          {{resume.experience}}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-office-building"></i>
+            荣誉奖项
+          </template>
+          {{resume.reward}}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <i class="el-icon-office-building"></i>
+            专业技能
+          </template>
+          {{resume.skill}}
+        </el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
   </div>
 </template>
 <script>
-// 引入调用competition.js文件
-import competitionApi from '@/api/competition.js'
+// 引入调用user.js文件
+import userApi from '../../api/user.js'
 
 export default {
   // 写核心代码的位置
@@ -63,6 +145,8 @@ export default {
       limit: 10, // 每页记录数
       total: 0, // 总记录数
       users: [],
+      resume: {},
+      resumeVisible: false
     }
   },
   created() {
@@ -71,13 +155,20 @@ export default {
   methods: {
     getUserList(page = 1) {
       this.page = page;
-      competitionApi.getUserListPage(
-        this.page,
-        this.limit,
-      ).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-      })
+      userApi.getPageUserList(this.page, this.limit)
+        .then(response => {
+          this.list = response.data.items
+          this.total = response.data.total
+        })
+    },
+
+    getUserResumeById(userId) {
+      this.resumeVisible = true
+      userApi.getUserResumeById(userId)
+        .then(response => {
+          console.log(response.data)
+          this.resume = response.data.resume
+        })
     },
     removeUserById(id) {
       // 删除比赛按钮的方法
@@ -86,7 +177,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        competitionApi.removeUserById(id).then(response => {
+        userApi.removeUserById(id).then(response => {
           // 删除成功
           // 提示信息
           this.$message({
@@ -97,9 +188,6 @@ export default {
           this.getUserList()
         })
       })
-      // 点取消执行catch方法  用户体验角度
-      // 此处无需进行提示取消
-      // 框架在./utils/request.js封装好了提示error的方法
     }
   }
 }

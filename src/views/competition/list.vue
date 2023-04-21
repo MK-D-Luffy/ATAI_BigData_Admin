@@ -109,14 +109,14 @@
           align="center"
           label="最优成绩提交时间">
         </el-table-column>
-        <el-table-column
-          align="center"
-          width="90"
-          label="查看团队成员">
-          <template slot-scope="scope">
-            <el-button size="mini" type="primary" @click="getTeamUsers(scope.row.id)">查看</el-button>
-          </template>
-        </el-table-column>
+        <!--        <el-table-column-->
+        <!--          align="center"-->
+        <!--          width="90"-->
+        <!--          label="查看团队成员">-->
+        <!--          <template slot-scope="scope">-->
+        <!--            <el-button size="mini" type="primary" @click="getTeamUsers(scope.row.id)">查看</el-button>-->
+        <!--          </template>-->
+        <!--        </el-table-column>-->
         <el-table-column
           align="center"
           width="90"
@@ -128,61 +128,22 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-dialog
-        title="团队成员信息"
-        :visible.sync="rankInnerVisible1"
-        append-to-body>
-        <el-descriptions v-for="user in teamUsers" :key="user.id" class="margin-top" :column="3" border>
-          <el-descriptions-item>
-            <template slot="label">
-              <i class="el-icon-user"></i>
-              用户名
-            </template>
-            kooriookami
-          </el-descriptions-item>
-          <el-descriptions-item>
-            <template slot="label">
-              <i class="el-icon-mobile-phone"></i>
-              手机号
-            </template>
-            18100000000
-          </el-descriptions-item>
-          <el-descriptions-item>
-            <template slot="label">
-              <i class="el-icon-location-outline"></i>
-              居住地
-            </template>
-            苏州市
-          </el-descriptions-item>
-          <el-descriptions-item>
-            <template slot="label">
-              <i class="el-icon-tickets"></i>
-              备注
-            </template>
-            <el-tag size="small">学校</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item>
-            <template slot="label">
-              <i class="el-icon-office-building"></i>
-              联系地址
-            </template>
-            江苏省苏州市吴中区吴中大道 1188 号
-          </el-descriptions-item>
-        </el-descriptions>
-      </el-dialog>
 
       <el-dialog
         title="提交结果记录"
-        :visible.sync="rankInnerVisible2"
+        :visible.sync="rankInnerVisible"
         append-to-body>
         <el-card v-for="record in competitionRecords" :key="record.id" style="margin-bottom: 20px">
           <el-row>
             <el-col style="border-bottom: 1px dashed #e4e7ed;
-                  padding-bottom: 10px;font-size: 16px;font-weight: 600" :span=19>
+                  padding-bottom: 10px;font-size: 16px;font-weight: 600" :span=16>
               {{ record.filename }}
             </el-col>
             <el-col style="color: #909399;font-size: 12px;font-weight: 400" :span="5">
               上传用户：{{ record.username }}
+            </el-col>
+            <el-col :span="3">
+              <el-button type="primary" size="mini" @click="getResumeById(record.userId)">查看简历</el-button>
             </el-col>
           </el-row>
           <el-row style="margin-top: 10px;margin-bottom: 15px">
@@ -201,12 +162,93 @@
         </el-card>
       </el-dialog>
 
+      <el-dialog
+        title="个人简历"
+        :visible.sync="resumeInnerVisible"
+        append-to-body>
+        <el-descriptions class="margin-top" :column="3" border>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-user"></i>
+              用户名
+            </template>
+            {{ resume.name }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-location-outline"></i>
+              年龄
+            </template>
+            {{ resume.age }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-location-outline"></i>
+              性别
+            </template>
+            {{ resume.sex === 1 ? '男' : '女' }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-mobile-phone"></i>
+              手机号
+            </template>
+            {{ resume.mobile }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-mobile-phone"></i>
+              邮箱
+            </template>
+            {{ resume.email }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-tickets"></i>
+              毕业院校
+            </template>
+            <el-tag size="small">{{ resume.school }}</el-tag>
+            <el-tag size="small">{{ resume.education }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-office-building"></i>
+              联系地址
+            </template>
+            {{ resume.address }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-descriptions class="margin-top" :column="1" border>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-office-building"></i>
+              项目经历
+            </template>
+            {{ resume.experience }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-office-building"></i>
+              荣誉奖项
+            </template>
+            {{ resume.reward }}
+          </el-descriptions-item>
+          <el-descriptions-item>
+            <template slot="label">
+              <i class="el-icon-office-building"></i>
+              专业技能
+            </template>
+            {{ resume.skill }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </el-dialog>
     </el-dialog>
   </div>
 </template>
 <script>
 // 引入调用competition.js文件
 import competitionApi from '@/api/competition.js'
+import userApi from '@/api/user.js'
 
 export default {
   // 写核心代码的位置
@@ -221,10 +263,11 @@ export default {
       isLarge: 0,
       rankVisible: false,
       rankList: [],
-      rankInnerVisible1: false,
       teamUsers: [],
-      rankInnerVisible2: false,
-      competitionRecords: []
+      rankInnerVisible: false,
+      competitionRecords: [],
+      resumeInnerVisible: false,
+      resume: {}
     }
   },
   created() {
@@ -278,7 +321,7 @@ export default {
         })
     },
     getTeamUsers(teamId) {
-      this.rankInnerVisible1 = true
+      this.resumeInnerVisible = true
       competitionApi
         .getTeamUsers(teamId)
         .then(response => {
@@ -291,12 +334,25 @@ export default {
         })
     },
     getCompetitionRecord(competitionId, teamId) {
-      this.rankInnerVisible2 = true
+      this.rankInnerVisible = true
       competitionApi
         .getCompetitionRecord(competitionId, teamId)
         .then(response => {
           console.log(response.data)
           this.competitionRecords = response.data.records
+        })
+        .catch(error => {
+          // 请求失败
+          console.log(error)
+        })
+    },
+    getResumeById(userId) {
+      this.resumeInnerVisible = true
+      userApi
+        .getUserResumeById(userId)
+        .then(response => {
+          console.log(response.data)
+          this.resume = response.data.resume
         })
         .catch(error => {
           // 请求失败
@@ -336,24 +392,24 @@ export default {
 }
 </script>
 
- <style>
-  .el-form-item__label {
-    color: #a85a11
-  }
+<style>
+.el-form-item__label {
+  color: #a85a11
+}
 
-  .el-table {
-    color: #a85a11;
-  }
+.el-table {
+  color: #a85a11;
+}
 
-  .el-table__placeholder {
-    color: orange !important;
-  }
+.el-table__placeholder {
+  color: orange !important;
+}
 
-  .el-input__inner {
-    border: 1px solid #a85a11;
-    border-radius: 0px;
-    /*background-color: #f9d98e;*/
-    color: #a85a11;
-  }
+.el-input__inner {
+  border: 1px solid #a85a11;
+  border-radius: 0px;
+  /*background-color: #f9d98e;*/
+  color: #a85a11;
+}
 
 </style>

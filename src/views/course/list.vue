@@ -9,7 +9,6 @@
       <el-form-item>
         <el-input v-model="courseQuery.name" placeholder="课程名称"/>
       </el-form-item>
-
       <el-form-item>
         <el-select v-model="courseQuery.level" clearable placeholder="课程类型">
           <el-option value="入门" label="入门"/>
@@ -51,11 +50,6 @@
           {{ scope.row.begin.substring(0, 16) }} - {{ scope.row.end.substring(0, 16) }}
         </template>
       </el-table-column>
-      <!--      <el-table-column :show-overflow-tooltip="true" label="排行榜" width="100">-->
-      <!--        <template slot-scope="scope">-->
-      <!--          <el-button type="danger" plain size="mini" @click="getRankList(scope.row.id)">排行榜</el-button>-->
-      <!--        </template>-->
-      <!--      </el-table-column>-->
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
           <router-link :to="'/course/edit/'+scope.row.id">

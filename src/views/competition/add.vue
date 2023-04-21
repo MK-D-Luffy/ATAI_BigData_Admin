@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div style="font-size: 19PX; font-weight: 600; margin-bottom: 20px; margin-left: 20px;">
+    <div style="font-size: 19PX; font-weight: 600; margin-bottom: 20px; margin-left: 20px;color: #a85a11;">
       <div v-if="this.$route.params && this.$route.params.id">修改比赛</div>
       <div v-else style="color: #a85a11;">添加比赛</div>
     </div>
@@ -16,6 +16,7 @@
         <el-select v-model="competition.level" clearable placeholder="请选择">
           <el-option value="官方赛" label="官方赛"/>
           <el-option value="训练赛" label="训练赛"/>
+          <el-option value="大奖赛" label="大奖赛"/>
         </el-select>
       </el-form-item>
       <el-form-item label="比赛简介">

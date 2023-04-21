@@ -2,20 +2,16 @@
   <div class="app-container">
     <div
       style="line-height: 40px; font-weight: 700; font-size: 22px; color: #a85a11; margin-left: 10px;margin-bottom: 20px">
-      比赛列表
+      数据集列表
     </div>
     <!--查询表单-->
     <el-form :inline="true" class="demo-form-inline">
       <el-form-item>
-        <el-input v-model="datasetQuery.name" placeholder="比赛名称"/>
+        <el-input v-model="datasetQuery.name" placeholder="数据集名称"/>
       </el-form-item>
 
       <el-form-item>
-        <el-select v-model="datasetQuery.category" clearable placeholder="比赛类型">
-          <el-option value="官方赛" label="官方赛"/>
-          <el-option value="训练赛" label="训练赛"/>
-          <el-option value="个人赛" label="个人赛"/>
-        </el-select>
+        <el-input v-model="datasetQuery.category" placeholder="数据集分类"/>
       </el-form-item>
       <el-button type="primary" icon="el-icon-search" @click="getList()">查询</el-button>
       <el-button type="default" @click="resetData()">清空</el-button>
@@ -28,23 +24,14 @@
       </el-table-column>
 
       <el-table-column :show-overflow-tooltip="true" prop="name" label="名称" align="center" width="180"/>
-      <el-table-column :show-overflow-tooltip="true" prop="intro" label="摘要"/>
-
-      <el-table-column :show-overflow-tooltip="true" prop="category" label="比赛类型" align="center" width="100">
+      <el-table-column :show-overflow-tooltip="true" prop="category" label="类型" align="center" width="100">
         <template slot-scope="scope">
           <el-button type="success" size="mini">{{ scope.row.category }}</el-button>
         </template>
       </el-table-column>
+      <el-table-column :show-overflow-tooltip="true" prop="intro" label="摘要"/>
       <el-table-column prop="watch" label="浏览量" align="center" width="100"/>
       <el-table-column prop="download" label="下载量" align="center" width="100"/>
-      <!--      <el-table-column :show-overflow-tooltip="true" prop="result" label="结果集数据路径"/>-->
-      <!--      <el-table-column :show-overflow-tooltip="true" prop="data" label="赛题数据路径"/>-->
-<!--      <el-table-column-->
-<!--        :show-overflow-tooltip="true"-->
-<!--        prop="deadline"-->
-<!--        label="截止日期"-->
-<!--        width="160"-->
-<!--      />-->
       <el-table-column label="操作" width="200" align="center">
         <template slot-scope="scope">
           <router-link :to="'/dataset/edit/'+scope.row.id">
@@ -160,7 +147,7 @@ export default {
   .el-input__inner {
     border: 1px solid #a85a11;
     border-radius: 0px;
-    background-color: #f9d98e;
+    /*background-color: #f9d98e;*/
     color: #a85a11;
   }
 

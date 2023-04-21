@@ -49,4 +49,24 @@ export default {
       method: 'get'
     })
   },
+  addCourseClass(courseClassInfo) {
+    return request({
+      url: `/ataiservice/atai-course/addCourseClass`,
+      method: 'post',
+      data: courseClassInfo
+    })
+  },
+  updateCourseClass(courseClassInfo) {
+    return request({
+      url: `/ataiservice/atai-course/updateCourseClass`,
+      method: 'post',
+      data: courseClassInfo
+    })
+  },
+  removeCourseClass(id) {
+    return request({
+      url: `/ataiservice/atai-course/class/${id}`,
+      method: 'delete'
+    })
+  },
 }
